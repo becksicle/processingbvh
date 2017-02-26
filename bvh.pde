@@ -7,6 +7,9 @@ float cz;
 double t = 0;
 double r = 1000;
 boolean paused = false;
+String[] bvhFiles;
+int nextFile = 0;
+boolean justStarted;
 
 String readFile(String filename) {
   StringBuilder sb = new StringBuilder();
@@ -17,16 +20,32 @@ String readFile(String filename) {
   return sb.toString();
 }
 
-void setup() {
+String[] listFileNames(String dir) {
+  File file = new File(dir);
+  String names[] = file.list();
+  for(int i=0; i < names.length; i++) {
+    names[i] = dir + "/" + names[i];
+  }
+  return names;
+}
+
+void readNextFile() {
   try {
-    //bvhData = new BvhParser().load(readFile("/Users/sambeck/Desktop/Male1_A2_Sway.bvh"));
-     bvhData = new BvhParser().load(readFile("/Users/sambeck/Desktop/Male1_bvh/Male1_B18_Walk2Leap2Walk.bvh"));
-    //bvhData = new BvhParser().load(readFile("/Users/sambeck/Desktop/test.bvh"));
-    //bvhData = new BvhParser().load(readFile("/Users/sambeck/Desktop/bvhexample.txt"));
+      //bvhData = new BvhParser().load(readFile("/Users/sambeck/Desktop/Male1_A2_Sway.bvh"));
+       bvhData = new BvhParser().load(readFile(bvhFiles[nextFile]));
+      //bvhData = new BvhParser().load(readFile("/Users/sambeck/Desktop/test.bvh"));
+      //bvhData = new BvhParser().load(readFile("/Users/sambeck/Desktop/bvhexample.txt"));
   } catch(Exception e) {
     e.printStackTrace();
     exit();
   }
+  nextFile = (nextFile + 1) % bvhFiles.length;
+  justStarted = true;
+}
+
+void setup() {
+  bvhFiles = listFileNames("/Users/sambeck/Desktop/Male1_bvh");
+  readNextFile();
   
   size(800, 600, P3D);
   
@@ -35,7 +54,7 @@ void setup() {
   fill(255);
   
   cx = 200;
-  cy = 0;
+  cy = 100;
   cz = 800;
   
   scale(1,-1,1);
@@ -54,7 +73,7 @@ void keyPressed() {
     curFrame = (curFrame - 1) % bvhData.motion.numFrames;
   } else if (key == 'r') {
     r = 1000;
-    cy = 0;
+    cy = 100;
     t = 0;
   }
 }
@@ -85,6 +104,10 @@ void draw() {
    camera(cx, cy, cz, 0, 0, 0, 0, 1, 0);
    if(!paused) {
      curFrame = frameCount % bvhData.motion.numFrames;
+     if(curFrame == 0 && !justStarted) {
+       readNextFile();
+     }
+     justStarted = false;
    }
   
   scale(1, -1, 1);
@@ -102,7 +125,7 @@ void draw() {
     drawJoint(roots[i]);
   }
   
-  println("elapsed: "+(millis() - startT));
+  //println("elapsed: "+(millis() - startT));
 }
 
 void printJoints(BvhJoint joint, int offset) {
@@ -143,7 +166,6 @@ void drawJoint(BvhJoint joint) {
     line((float)lastRow[0], (float)lastRow[1], (float)lastRow[2], (float)childLastRow[0], (float)childLastRow[1], (float)childLastRow[2]);
     drawJoint(child);
   }
-
 }
 
 void transformJoint(BvhJoint joint, int offset) {  
