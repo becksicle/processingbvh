@@ -1,5 +1,4 @@
 BvhData bvhData; //<>//
-Matrices44 m = new Matrices44();
 int curFrame = 0;
 float cx;
 float cy;
@@ -50,8 +49,8 @@ void setup() {
 
   size(800, 600, P3D);
 
-  println("Frame rate: "+(int)(1.0/bvhData.motion.frameTime));
-  frameRate((int)(1.0/bvhData.motion.frameTime));
+  println("Frame rate: "+bvhData.motion.frameRate);
+  frameRate(bvhData.motion.frameRate);
   fill(255);
 
   cx = 200;
@@ -80,7 +79,7 @@ void keyPressed() {
 }
 
 void draw() {
-  int start = millis();
+  //int start = millis();
   background(0);
   
   if (keyPressed) {

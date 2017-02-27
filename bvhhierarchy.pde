@@ -1,13 +1,13 @@
-enum BvhChannel {
+enum BvhChannel { //<>// //<>//
   XPOSITION, 
-    YPOSITION, 
-    ZPOSITION, 
-    XROTATION, 
-    YROTATION, 
-    ZROTATION
+  YPOSITION, 
+  ZPOSITION, 
+  XROTATION, 
+  YROTATION, 
+  ZROTATION
 };
 
-  class BvhOffset {
+class BvhOffset {
   int offset;
 }
 
@@ -35,46 +35,46 @@ class BvhJoint {
       parent.children.add(this);
     }
   }
-  
+
   void drawJoint(int curFrame, boolean drawLabels, boolean drawJoints) {  
     double[] lastRow = transforms[curFrame].col(3);
-  
-    if(drawLabels) {
+
+    if (drawLabels) {
       textSize(9);
       if (name != null) {
         text(name, (float)lastRow[0], (float)lastRow[1], (float)lastRow[2]);
       }
     }
-    
-    if(drawJoints) {
+
+    if (drawJoints) {
       pushMatrix();
       translate((float)lastRow[0], (float)lastRow[1], (float)lastRow[2]);
       sphere(2);
       popMatrix();
     }
-    
+
     for (BvhJoint child : children) {
       double[] childLastRow = child.transforms[curFrame].col(3);
       line((float)lastRow[0], (float)lastRow[1], (float)lastRow[2], (float)childLastRow[0], (float)childLastRow[1], (float)childLastRow[2]);
       child.drawJoint(curFrame, drawLabels, drawJoints);
     }
   }
-  
+
   void printJoint(int curFrame, BvhMotion motion) {
     int offset = curFrame * motion.stride;
     double[] lastRow = transforms[curFrame].col(3);
     print(name + ": xyz("+lastRow[0]+","+lastRow[1]+","+lastRow[2]+")  (ox, oy, oz): "+offsetX+","+offsetY+","+offsetZ+") channels: ");
-  
+
     for (int i=0; i < channels.length; i++) {
       double value = motion.data[offset+motionIndex+i];
       BvhChannel channel = channels[i];
       print(channel+" = " + value+ " ");
     }
-  
+
     print(" motion offset: "+motionIndex);
     println();
     transforms[curFrame].print();
-  
+
     for (BvhJoint child : children) {
       child.printJoint(curFrame, motion);
     }
@@ -95,36 +95,39 @@ class BvhMotion {
 
   double[] data; // 0: frame, 1: joint index x channel
   int stride;
+  int frameRate;
 
   BvhMotion(int numFrames, double frameTime, double[] data) {
     this.numFrames = numFrames;
     this.frameTime = frameTime;
     this.data = data;
     this.stride = data.length / numFrames;
-    ;
+    this.frameRate = (int)(1.0/frameTime);
   }
 }
 
 class BvhData {
   BvhHierarchy hierarchy;
   BvhMotion motion;
+  Matrices44 m;
 
   BvhData(BvhHierarchy hierarchy, BvhMotion motion) {
     this.hierarchy = hierarchy;
     this.motion = motion;
+    this.m = new Matrices44();
     computeTransforms();
   }
 
   void computeTransforms() {
     println("Computing transforms for all frames");
-    for (BvhJoint root : hierarchy.roots) { //<>//
+    for (BvhJoint root : hierarchy.roots) {
       computeTransforms(root);
     }
     println("Done computing transforms");
   }
 
   void computeTransforms(BvhJoint joint) {
-    joint.transforms = new Matrix44[motion.numFrames]; //<>//
+    joint.transforms = new Matrix44[motion.numFrames];
     for (int frame=0; frame < motion.numFrames; frame++) {
       int offset = frame * motion.stride;
       joint.transforms[frame] = m.translation(joint.offsetX, joint.offsetY, joint.offsetZ);
@@ -151,21 +154,21 @@ class BvhData {
         joint.transforms[frame] = joint.parent.transforms[frame].multiply(joint.transforms[frame]);
       }
     }
-    
+
     for (BvhJoint child : joint.children) {
       computeTransforms(child);
     }
   }
-  
+
   void drawJoints(int curFrame, boolean drawLabels, boolean drawJoints) {
     BvhJoint[] roots = hierarchy.roots;
     for (int i=0; i < roots.length; i++) {
       roots[i].drawJoint(curFrame, drawLabels, drawJoints);
     }
   }
-  
+
   void printJoints(int curFrame) {  
-    BvhJoint[] roots = bvhData.hierarchy.roots;
+    BvhJoint[] roots = hierarchy.roots;
     for (int i=0; i < roots.length; i++) {
       roots[i].printJoint(curFrame, motion);
     }
