@@ -9,7 +9,7 @@ boolean paused = false;
 String[] bvhFiles;
 int nextFile = 0;
 boolean justStarted;
-boolean drawLabels = true;
+boolean drawLabels = false;
 boolean drawJoints = false;
 
 String readFile(String filename) {

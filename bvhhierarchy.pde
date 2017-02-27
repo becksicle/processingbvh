@@ -180,7 +180,7 @@ class BvhParser {
   BvhData load(String bvh) throws Exception {
     BvhOffset offset = new BvhOffset();
 
-    Tokenizer t = new Tokenizer(bvh);
+    Tokenizer t = new Tokenizer(bvh, false);
     t.consume("HIERARCHY");
 
     ArrayList<BvhJoint> roots = new ArrayList<BvhJoint>();

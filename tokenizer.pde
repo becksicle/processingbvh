@@ -1,10 +1,12 @@
 class Tokenizer {
   int index;
   String content;
+  boolean caseSensitive;
 
-  Tokenizer(String content) {
+  Tokenizer(String content, boolean caseSensitive) {
     index = 0;
     this.content = content;
+    this.caseSensitive = caseSensitive;
     consumeWhitespace();
   }
 
@@ -31,9 +33,12 @@ class Tokenizer {
   }
 
   boolean peek(String token) {
+    if(!caseSensitive) token = token.toLowerCase();
     for (int i=0; i < token.length(); i++) {
-      if (content.length() <= index+i) return false; 
-      if (token.charAt(i) != content.charAt(index+i)) return false;
+      if (content.length() <= index+i) return false;
+      char testChar = content.charAt(index+i);
+      if(!caseSensitive) testChar = Character.toLowerCase(testChar);
+      if (token.charAt(i) != testChar) return false;
     }
     //print("peeked "+token);
     return true;
