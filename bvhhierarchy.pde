@@ -1,13 +1,17 @@
 enum BvhChannel { //<>// //<>//
   XPOSITION, 
-  YPOSITION, 
-  ZPOSITION, 
-  XROTATION, 
-  YROTATION, 
-  ZROTATION
+    YPOSITION, 
+    ZPOSITION, 
+    XROTATION, 
+    YROTATION, 
+    ZROTATION
 };
 
-class BvhOffset {
+/*
+  Holds the offset in motion data so we can mutate it
+ as we parse and encounter new joints.
+ */
+  class BvhOffset {
   int offset;
 }
 
@@ -36,7 +40,7 @@ class BvhJoint {
     }
   }
 
-  void drawJoint(int curFrame, boolean drawLabels, boolean drawJoints) {  
+  void drawJoint(int curFrame, boolean drawLabels) {  
     double[] lastRow = transforms[curFrame].col(3);
 
     if (drawLabels) {
@@ -46,17 +50,15 @@ class BvhJoint {
       }
     }
 
-    if (drawJoints) {
-      pushMatrix();
-      translate((float)lastRow[0], (float)lastRow[1], (float)lastRow[2]);
-      sphere(2);
-      popMatrix();
-    }
+    pushMatrix();
+    translate((float)lastRow[0], (float)lastRow[1], (float)lastRow[2]);
+    box(2);
+    popMatrix();
 
     for (BvhJoint child : children) {
       double[] childLastRow = child.transforms[curFrame].col(3);
       line((float)lastRow[0], (float)lastRow[1], (float)lastRow[2], (float)childLastRow[0], (float)childLastRow[1], (float)childLastRow[2]);
-      child.drawJoint(curFrame, drawLabels, drawJoints);
+      child.drawJoint(curFrame, drawLabels);
     }
   }
 
@@ -91,11 +93,12 @@ class BvhHierarchy {
 
 class BvhMotion {
   int numFrames;
-  double frameTime; // fps = 1 / frameTime
-
-  double[] data; // 0: frame, 1: joint index x channel
-  int stride;
+  double frameTime;
   int frameRate;
+
+  // motionValue(frame, joint, channel) = frameIndex x stride + jointIndex + channelIndex
+  double[] data;
+  int stride;
 
   BvhMotion(int numFrames, double frameTime, double[] data) {
     this.numFrames = numFrames;
@@ -160,10 +163,10 @@ class BvhData {
     }
   }
 
-  void drawJoints(int curFrame, boolean drawLabels, boolean drawJoints) {
+  void drawJoints(int curFrame, boolean drawLabels) {
     BvhJoint[] roots = hierarchy.roots;
     for (int i=0; i < roots.length; i++) {
-      roots[i].drawJoint(curFrame, drawLabels, drawJoints);
+      roots[i].drawJoint(curFrame, drawLabels);
     }
   }
 
