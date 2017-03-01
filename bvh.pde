@@ -64,6 +64,7 @@ void readNextFile() {
   try {
     println("Loading "+bvhFiles[nextFile]);
     bvhData = new BvhParser().load(readFile(bvhFiles[nextFile]));
+    frameRate(bvhData.motion.frameRate);
   } 
   catch(Exception e) {
     e.printStackTrace();
@@ -75,7 +76,7 @@ void readNextFile() {
 
 void setup() {
   // prime list of files from a directory that has only bvh files in it
-  bvhFiles = listFileNames("/Users/sambeck/Desktop/Male1_bvh");  
+  bvhFiles = listFileNames("/Users/sambeck/Downloads/Female1_bvh");  
   
   // load the first one
   readNextFile();
@@ -83,7 +84,7 @@ void setup() {
   size(800, 600, P3D);
 
   println("Frame rate: "+bvhData.motion.frameRate);
-  frameRate(bvhData.motion.frameRate);
+  
   
   fill(255);
   
@@ -117,6 +118,7 @@ void keyPressed() {
   }
 }
 
+int ty = 0;
 void draw() {
   background(0);
 
@@ -130,7 +132,11 @@ void draw() {
     } else if (key =='a') {
       // retracts camera in the z direction
       r -= 100;
-    } 
+    } else if (key == 'y') {
+      ty += 100;
+    } else if (key == 'u') {
+      ty -= 100;
+    }
   }
 
   // camera x and z position is determined by rotation around y at an angle t, with radius r
@@ -139,7 +145,7 @@ void draw() {
 
   // camera points to root joint at every frame
   double[] col = bvhData.hierarchy.roots[0].transforms[curFrame].col(3);
-  camera(cx, (int)col[2], cz, (int)col[0], (int)col[1], (int)col[2], 0, 1, 0);
+  camera(cx, ty+(int)col[2], cz, (int)col[0], (int)col[1], (int)col[2], 0, 1, 0);
 
   if (!paused) {
     // advance to next frame
@@ -156,6 +162,7 @@ void draw() {
 
   // deal with processing having y axis inverted
   scale(1, -1, 1);
+  translate(0, -height/2, 0);
 
   // draw axes
   stroke(255, 0, 0);
