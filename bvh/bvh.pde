@@ -72,14 +72,18 @@ void readNextFile() {
   }
   nextFile = (nextFile + 1) % bvhFiles.length;
   justStarted = true;
+  curFrame = 0;
+}
+
+void refreshFileList() {
+  // prime list of files from a directory that has only bvh files in it
+  bvhFiles = listFileNames("data");
+  nextFile = 0;
+  readNextFile();
 }
 
 void setup() {
-  // prime list of files from a directory that has only bvh files in it
-  bvhFiles = listFileNames("data");  
-  
-  // load the first one
-  readNextFile();
+  refreshFileList();    
 
   size(800, 600, P3D);
 
@@ -115,8 +119,11 @@ void keyPressed() {
   } else if(key == 's') {
     // pause animation or not
     paused = !paused;
+  } else if(key == 'j') {
+    readNextFile();    
+  } else if (key == 'r') {
+    refreshFileList();      
   }
-}
 
 int ty = 0;
 void draw() {
@@ -136,7 +143,7 @@ void draw() {
       ty += 100;
     } else if (key == 'u') {
       ty -= 100;
-    }
+    } 
   }
 
   // camera x and z position is determined by rotation around y at an angle t, with radius r

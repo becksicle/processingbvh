@@ -22,4 +22,6 @@ And some basic controls to step through the animation:
 <li>"n" - goto next frame </li>
 <li>"p" - goto previous frame </li>
 <li>"d" - print joints to console</li>
+<li>"j" - read next file</li>
+<li>"f" - refresh file list</li>
 </ul>
