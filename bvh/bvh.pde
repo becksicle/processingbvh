@@ -47,11 +47,11 @@ String readFile(String filename) {
 /*
   Lists all the files in a directoy.
 */
-String[] listFileNames(String dir) {
-  File file = new File(dir);
+String[] listFileNames(String dir) {  
+  File file = new File(dataPath(""));
   
   String names[] = file.list();
-  for (int i=0; i < names.length; i++) {
+  for (int i=0; i < names.length; i++) {    
     names[i] = dir + "/" + names[i];
   }
   return names;
@@ -76,7 +76,7 @@ void readNextFile() {
 
 void setup() {
   // prime list of files from a directory that has only bvh files in it
-  bvhFiles = listFileNames("/Users/sambeck/Downloads/Female1_bvh");  
+  bvhFiles = listFileNames("data");  
   
   // load the first one
   readNextFile();
