@@ -1,19 +1,13 @@
-// bvh file being played //<>//
+import peasy.*; //<>//
+
+//QueasyCam cam;
+PeasyCam cam;
+
+// bvh file being played
 BvhData bvhData;
 
 // frame index in current bvhData.motion
 int curFrame = 0;
-
-// camera position
-float cx;
-float cy;
-float cz;
-
-// camera angle around the y axis
-double t = 0;
-
-// camera distance away from the origin
-double r = 1000;
 
 // controls pause/playback of animation
 boolean paused = false;
@@ -65,6 +59,7 @@ void readNextFile() {
     println("Loading "+bvhFiles[nextFile]);
     bvhData = new BvhParser().load(readFile(bvhFiles[nextFile]));
     frameRate(bvhData.motion.frameRate);
+    println("Frame rate: "+bvhData.motion.frameRate); 
   } 
   catch(Exception e) {
     e.printStackTrace();
@@ -83,19 +78,17 @@ void refreshFileList() {
 }
 
 void setup() {
+  cam = new PeasyCam(this, 100);
+  cam.setMinimumDistance(10);
+  cam.setMaximumDistance(1000);
+  cam.setDistance(500);
+  cam.lookAt(0,0,0);
+  
   refreshFileList();    
 
   size(800, 600, P3D);
 
-  println("Frame rate: "+bvhData.motion.frameRate);
-  
-  
-  fill(255);
-  
-  // initialize camera position
-  cx = 200;
-  cy = 100;
-  cz = 800;
+  fill(255);  
 }
 
 void keyPressed() {
@@ -107,12 +100,7 @@ void keyPressed() {
     curFrame = (curFrame + 1) % bvhData.motion.numFrames;
   } else if (key == 'p') {
     // goes back to previous frame (useful if paused)
-    curFrame = (curFrame - 1) % bvhData.motion.numFrames;
-  } else if (key == 'r') {
-    // reset camera position, kind of
-    r = 1000;
-    cy = 100;
-    t = 0;
+    curFrame = (curFrame - 1) % bvhData.motion.numFrames;  
   } else if (key == 'l') {
     // toggles whether to draw labels or not
     drawLabels = !drawLabels;
@@ -121,38 +109,13 @@ void keyPressed() {
     paused = !paused;
   } else if(key == 'j') {
     readNextFile();    
-  } else if (key == 'r') {
+  } else if (key == 'f') {
     refreshFileList();      
   }
+}
 
-int ty = 0;
 void draw() {
   background(0);
-
-  if (keyPressed) {
-    if (key == 'x') {
-      // rotates around the y axis in the direction
-      t += mouseX < width/2 ? Math.toRadians(10.0) : Math.toRadians(-10.0);
-    } else if (key == 'z') {
-      // advances camera in the z direction
-      r += 100;
-    } else if (key =='a') {
-      // retracts camera in the z direction
-      r -= 100;
-    } else if (key == 'y') {
-      ty += 100;
-    } else if (key == 'u') {
-      ty -= 100;
-    } 
-  }
-
-  // camera x and z position is determined by rotation around y at an angle t, with radius r
-  cx = Math.round(r*Math.cos(t));
-  cz = Math.round(r*Math.sin(t));  
-
-  // camera points to root joint at every frame
-  double[] col = bvhData.hierarchy.roots[0].transforms[curFrame].col(3);
-  camera(cx, ty+(int)col[2], cz, (int)col[0], (int)col[1], (int)col[2], 0, 1, 0);
 
   if (!paused) {
     // advance to next frame
@@ -169,7 +132,6 @@ void draw() {
 
   // deal with processing having y axis inverted
   scale(1, -1, 1);
-  translate(0, -height/2, 0);
 
   // draw axes
   stroke(255, 0, 0);
@@ -181,5 +143,5 @@ void draw() {
   stroke(255);
   
   // draw joint at current frame
-  bvhData.drawJoints(curFrame, drawLabels);
+  bvhData.drawJoints(curFrame, drawLabels); 
 }
